@@ -1,5 +1,5 @@
 //jshint esversion:6
-require('dotenv').config();
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -7,7 +7,8 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { error, log } = require("console");
 
-const md5=require('md5');
+const bcrypt=require("bcrypt")
+const saltRounds=10;
 
 app.use(express.static("public"));
 app.set("view engine", "ejs");
@@ -26,9 +27,6 @@ const userSchema = mongoose.Schema({
   }
 });
 
-console.log(process.env.SECRET);
-
-
  
 const User = new mongoose.model("User", userSchema);
 
@@ -44,31 +42,39 @@ app.get("/register", function (req, res) {
 });
 
 app.post("/register", function (req, res) {
-  const u1 = new User({
-    email: req.body.username,
-    password: md5(req.body.password)
-  });
-  u1.save()
-  .then(() => {
-    console.log("Successfully added");
-    res.render("secrets");
-  })
-  .catch((err) => {
-    console.log(err + " has occurred");
-  });
+    bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        const u1 = new User({
+            email: req.body.username,
+            password:hash
+          });
+          u1.save()
+          .then(() => {
+            console.log("Successfully added");
+            res.render("secrets");
+          })
+          .catch((err) => {
+            console.log(err + " has occurred");
+          });
+
+    });
+
+
+
+  
 
 });
 
 
 app.post("/login",function(req,res){
     const user=req.body.username;
-    const passw=md5(req.body.password); 
+    const passw=req.body.password; 
 
     User.findOne({ email: user })
   .then((found) => {
-    if (found && found.password === passw) {
-      res.render("secrets");
-    }
+    bcrypt.compare(passw, found.password, function(err, result) {
+       if (result==true)
+        res.render("secrets");
+    });
   })
   .catch((err) => {
     console.log("error", err);
