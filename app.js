@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { error, log } = require("console");
 
+const encrypt=require('mongoose-encryption')
+
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -22,6 +24,9 @@ const userSchema = mongoose.Schema({
     required: true,
   }
 });
+
+const secret="Thisisoursecret";
+userSchema.plugin(encrypt, { secret: secret,encryptedFields:['password'] });
 
 const User = new mongoose.model("User", userSchema);
 
