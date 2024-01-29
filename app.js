@@ -7,8 +7,8 @@ const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const { error, log } = require("console");
 
-const bcrypt=require("bcrypt")
-const saltRounds=10;
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
 
 app.use(express.static("public"));
 app.set("view engine", "ejs");
